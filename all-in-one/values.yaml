@@ -178,7 +178,6 @@ kubernetes:
     runAsUser: 802
     runAsGroup: 802
 
-
 wso2:  
   # -- WSO2 Choreo Analytics Parameters
   # If provided, these parameters will be used publish analytics data to Choreo Analytics environment (https://apim.docs.wso2.com/en/latest/observe/api-manager-analytics/configure-analytics/register-for-analytics/).
@@ -611,3 +610,50 @@ wso2:
           carbonDatabase: 50M
           # -- For persisting the indexed solr data
           solrIndexedData: 50M
+
+filebeat:
+  enabled: true
+  logTypes:
+    enableCarbonLog: true
+    enableAPILog: true
+    enableAuditLog: true
+    enableTrafficManagerLog: true
+    enableTraceNessagesLog: true
+    enableCorrelationLog: true
+    enableAPIGatewayErrorLog: true
+    enableOpenTracingLog: true
+    enableTraceAppenderLog: true
+    enableServiceLog: true
+    enableMetricsLog: true
+  sidecar:
+    elasticsearch:
+      host: elasticsearch-master.monitoring
+      port: 9200
+    image:
+      registry: "docker.elastic.co"
+      repository: "beats/filebeat"
+      tag: "8.5.1"
+    imagePullPolicy: Always
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "100Mi"
+      limits:
+        cpu: "1000m"
+        memory: "200Mi"
+    securityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      privileged: false
+    #envFrom:
+    extraEnvs:
+    - name: "ELASTICSEARCH_USERNAME"
+      valueFrom:
+        secretKeyRef:
+          name: elasticsearch-master-credentials
+          key: username
+    - name: "ELASTICSEARCH_PASSWORD"
+      valueFrom:
+        secretKeyRef:
+          name: elasticsearch-master-credentials
+          key: password
