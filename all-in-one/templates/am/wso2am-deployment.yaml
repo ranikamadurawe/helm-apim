@@ -225,7 +225,7 @@ spec:
           securityContext:
             runAsUser: {{ .Values.filebeat.sidecar.securityContext.runAsUser }}
             runAsGroup: {{ .Values.filebeat.sidecar.securityContext.runAsGroup }}
-            priviledged: {{ .Values.filebeat.sidecar.securityContext.priviledged }}
+            privileged: {{ .Values.filebeat.sidecar.securityContext.privileged }}
           {{- if .Values.filebeat.sidecar.envFrom }}
           envFrom: {{ toYaml ( .Values.filebeat.sidecar.envFrom ) | nindent 10 }}
           {{- end }}
@@ -250,8 +250,8 @@ spec:
           - name: ELASTICSEARCH_HOST
             value: {{ .Values.filebeat.sidecar.elasticsearch.host }}
           - name: ELASTICSEARCH_PORT
-            value: {{ .Values.filebeat.sidecar.elasticsearch.port }}
-        {{- toYaml .Values.filebeat.sidecar.extraEnvs | nindent 8 }}
+            value: {{ .Values.filebeat.sidecar.elasticsearch.port | squote }}
+        {{- toYaml .Values.filebeat.sidecar.extraEnvs | nindent 10 }}
       {{- end }}
       {{- if .Values.wso2.deployment.nodeSelector }}
       nodeSelector:
@@ -264,7 +264,6 @@ spec:
         - name: filebeat-configs
           configMap:
             name: {{ template "am-all-in-one.fullname" . }}-filebeat-config
-            defaultMode: 0407
         - name: elasticsearch-master-certs
           secret:
             secretName: elasticsearch-master-certs
