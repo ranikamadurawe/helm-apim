@@ -17,9 +17,6 @@ metadata:
 data:
   filebeat.yml: |
     filebeat.inputs:
-      - type: log
-        paths:
-          - /var/log/wso2am/
 {{- if .Values.filebeat.logTypes.enableCarbonLog }}      
       - type: log
         paths:

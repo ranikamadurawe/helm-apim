@@ -618,7 +618,7 @@ filebeat:
     enableAPILog: true
     enableAuditLog: true
     enableTrafficManagerLog: true
-    enableTraceNessagesLog: true
+    enableTraceMessagesLog: true
     enableCorrelationLog: true
     enableAPIGatewayErrorLog: true
     enableOpenTracingLog: true
