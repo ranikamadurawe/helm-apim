@@ -21,56 +21,89 @@ data:
       - type: log
         paths:
           - /var/log/wso2am/carbon.log
+        fields:
+          log_type: carbon_log
+        fields_under_root: true
 {{- end }}
 {{- if .Values.filebeat.logTypes.enableAPILog }}      
       - type: log
         paths:
           - /var/log/wso2am/api.log
+        fields:
+          log_type: api_log
+        fields_under_root: true
 {{- end }}
 {{- if .Values.filebeat.logTypes.enableAuditLog }}      
       - type: log
         paths:
           - /var/log/wso2am/audit.log
+        fields:
+          log_type: audit_log
+        fields_under_root: true
 {{- end }}  
 {{- if .Values.filebeat.logTypes.enableTrafficManagerLog }}      
       - type: log
         paths:
           - /var/log/wso2am/tm.out
+        fields:
+          log_type: traffic_manager_log
+        fields_under_root: true
 {{- end }}   
 {{- if .Values.filebeat.logTypes.enableTraceMessagesLog }}      
       - type: log
         paths:
           - /var/log/wso2am/wso2carbon-trace-messages.log
+        fields:
+          log_type: trace_messages_log
+        fields_under_root: true
 {{- end }}   
 {{- if .Values.filebeat.logTypes.enableCorrelationLog }}      
       - type: log
         paths:
           - /var/log/wso2am/correlation.log
+        fields:
+          log_type: correlation_log
+        fields_under_root: true
 {{- end }}   
 {{- if .Values.filebeat.logTypes.enableAPIGatewayErrorLog }}      
       - type: log
         paths:
           - /var/log/wso2am/wso2-apigw-errors.log
+        fields:
+          log_type: apigw_errors_log
+        fields_under_root: true
 {{- end }}   
 {{- if .Values.filebeat.logTypes.enableOpenTracingLog }}      
       - type: log
         paths:
           - /var/log/wso2am/wso2-apimgt-open-tracing.log
+        fields:
+          log_type: open_tracing_log
+        fields_under_root: true
 {{- end }}         
 {{- if .Values.filebeat.logTypes.enableTraceAppenderLog }}      
       - type: log
         paths:
           - /var/log/wso2am/wso2-apigw-trace.log
+        fields:
+          log_type: trace_appender_log
+        fields_under_root: true
 {{- end }}   
 {{- if .Values.filebeat.logTypes.enableServiceLog }}      
       - type: log
         paths:
           - /var/log/wso2am/wso2-apigw-service.log
+        fields:
+          log_type: service_log
+        fields_under_root: true
 {{- end }}   
 {{- if .Values.filebeat.logTypes.enableMetricsLog }}      
       - type: log
         paths:
           - /var/log/wso2am/apim_metrics.log
+        fields:
+          log_type: metrics_log
+        fields_under_root: true
         processors:
         - dissect:
             tokenizer: "%{UNWANTED} apimMetrics:%{apimMetrics}, %{UNWANTED} :%{properties}"
@@ -82,6 +115,18 @@ data:
             max_depth: 1
             target: ""
             overwrite_keys: true
+        - add_fields:
+            target: ''
+            fields:
+              response_type: "apim_event_response"
+            when.equals:
+              apimMetrics: "apim:response"
+        - add_fields:
+            target: ''
+            fields:
+              response_type: "apim_event_faulty"
+            when.equals:
+              apimMetrics: "apim:faulty"
 {{- end }}   
     output.elasticsearch:
       host: "${NODE_NAME}"
@@ -90,3 +135,14 @@ data:
       password: "${ELASTICSEARCH_PASSWORD}"
       protocol: https
       ssl.certificate_authorities: ["/usr/share/filebeat/certs/ca.crt"]
+      index: "${POD_NAMESPACE}-${DEPLOYMENT_NAME}-%{[response_type]}-%{[log_type]}" 
+      when.equals:
+        log_type: metrics_log
+      index: "${POD_NAMESPACE}-${DEPLOYMENT_NAME}-%{[log_type]}" 
+      when.not.equals:
+        log_type: metrics_log
+
+    setup.template:
+      name: '${POD_NAMESPACE}-${DEPLOYMENT_NAME}'
+      pattern: '${POD_NAMESPACE}-${DEPLOYMENT_NAME}-*'
+      enabled: false

@@ -242,6 +242,8 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
+          - name: DEPLOYMENT_NAME
+            value: {{ template "am-all-in-one.fullname" . }}-am-deployment
           - name: ELASTICSEARCH_HOST
             value: {{ .Values.filebeat.sidecar.elasticsearch.host }}
           - name: ELASTICSEARCH_PORT
